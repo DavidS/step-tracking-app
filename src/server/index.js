@@ -30,23 +30,27 @@ app.use(async (req, res, next) => {
 
 app.route('/dashboard')
     .get(function(req, res) {
-        database.query("SELECT RANK () OVER(ORDER BY SUM(`steps`) DESC) as rank, `name`, SUM(`steps`) as steps FROM `steps` GROUP BY `userId`")
+        database.query("SELECT RANK () OVER(ORDER BY SUM(steps) DESC) as rank, name, SUM(steps) as steps FROM steps GROUP BY name, user_id")
             .then(steps => {
                 res.json(steps[0])
             });
     });
 
-const database = new Sequelize({
-    dialect: 'sqlite',
-    storage: './test.sqlite',
+const database = new Sequelize(
+    process.env.REACT_APP_DATABASE_NAME,
+    process.env.REACT_APP_DATABASE_USER,
+    process.env.REACT_APP_DATABASE_PASSWORD, {
+    host: process.env.REACT_APP_DATABASE_HOST,
+    dialect: 'postgres',
 });
 
 const Step = database.define('steps', {
-    userId: Sequelize.STRING,
+    userId: {type: Sequelize.STRING, field: 'user_id'},
     name: Sequelize.STRING,
     steps: Sequelize.INTEGER,
-    stepsDate: Sequelize.DATEONLY,
-});
+    stepsDate: {type: Sequelize.DATEONLY, field: 'steps_date'},
+    },
+    { underscored: true, });
 
 epilogue.initialize({ app, sequelize: database });
 
