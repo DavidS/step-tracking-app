@@ -39,14 +39,6 @@ export default function log(...params) {
     }
   });
 
-  // log to a file
-  const logFile = fs.createWriteStream('./log/all.log', {
-    flags: 'a',
-  });
-  logFile.write(
-    `${new Date().toISOString()} - ${util.format.apply(null, args)}\n`,
-  );
-
   // Check if we have to log to stdout.
   if (process.env.NODE_LOGGING === 'true') {
     const found = args.join('').match(/^(\w)*:/g);

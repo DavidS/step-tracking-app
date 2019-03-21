@@ -1,12 +1,15 @@
-require('dotenv').config({ path: '.env.local' });
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import Sequelize from 'sequelize';
+import epilogue from 'epilogue'
+import OktaJwtVerifier from '@okta/jwt-verifier';
+import log from './log';
 
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const Sequelize = require('sequelize');
-const epilogue = require('epilogue');
-const OktaJwtVerifier = require('@okta/jwt-verifier');
-const log = require('./log');
+dotenv.config({
+  path: '.env.local',
+});
 
 const {
   REACT_APP_OKTA_CLIENT_ID,
