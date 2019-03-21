@@ -25,7 +25,7 @@ const styles = theme => ({
     },
 });
 
-const API = process.env.REACT_APP_API || 'http://localhost:3001';
+const API = process.env.REACT_APP_API || 'http://localhost:3003';
 
 class Dashboard extends Component {
     state = {
@@ -55,7 +55,8 @@ class Dashboard extends Component {
     }
 
     async getData() {
-        this.setState({ loading: false, dashData: await this.fetch('get', '/dashboard') });
+        const dashData = await this.fetch('get', '/dashboard');
+        this.setState({ loading: false, dashData  });
     }
 
     render() {
