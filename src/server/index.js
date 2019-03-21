@@ -41,6 +41,7 @@ const database = new Sequelize(
     process.env.REACT_APP_DATABASE_USER,
     process.env.REACT_APP_DATABASE_PASSWORD, {
     host: process.env.REACT_APP_DATABASE_HOST,
+    port: process.env.REACT_APP_DATABASE_PORT || 5432,
     dialect: 'postgres',
 });
 
@@ -89,7 +90,7 @@ stepsResource.create.write(async function(req, res, context) {
     }
 });
 
-const port = process.env.SERVER_PORT || 3001;
+const port = process.env.SERVER_PORT || 3003;
 
 database.sync().then(() => {
     app.listen(port, () => {

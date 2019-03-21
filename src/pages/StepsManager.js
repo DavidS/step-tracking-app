@@ -33,7 +33,7 @@ const styles = theme => ({
     },
 });
 
-const API = process.env.REACT_APP_API || 'http://localhost:3001';
+const API = process.env.REACT_APP_API || 'http://localhost:3003';
 
 class StepsManager extends Component {
     state = {
