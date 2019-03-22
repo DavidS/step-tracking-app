@@ -31,13 +31,19 @@ const AppHeader = ({ classes }) => (
         color="inherit"
         style={{ paddingRight: '15px' }}
       >
-        March for Mental Health
+        May for Mental Health
       </Typography>
       <Button color="inherit" component={Link} to="/">
-        Leader Board
+        Step Leaders
+      </Button>
+      <Button color="inherit" component={Link} to="/donationLeaders">
+        Donation Leaders
       </Button>
       <Button color="inherit" component={Link} to="/steps">
         My Steps
+      </Button>
+      <Button color="inherit" component={Link} to="/profile">
+        My Fundraising
       </Button>
       <div className={classes.flex} />
       <LoginButton />

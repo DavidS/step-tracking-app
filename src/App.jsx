@@ -5,8 +5,10 @@ import { CssBaseline, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import AppHeader from './components/AppHeader';
-import Home from './pages/Home';
+import StepLeaders from './pages/StepLeaders';
+import DonationLeaders from './pages/DonationLeaders';
 import StepsManager from './pages/StepsManager';
+import ProfileManager from './pages/ProfileManager';
 
 const styles = theme => ({
   main: {
@@ -22,8 +24,10 @@ const App = ({ classes }) => (
     <CssBaseline />
     <AppHeader />
     <main className={classes.main}>
-      <Route exact path="/" component={Home} />
+      <Route exact path="/" component={StepLeaders} />
+      <Route path="/donationLeaders" component={DonationLeaders} />
       <SecureRoute path="/steps" component={StepsManager} />
+      <SecureRoute path="/profile" component={ProfileManager}/>
       <Route path="/implicit/callback" component={ImplicitCallback} />
     </main>
   </Fragment>

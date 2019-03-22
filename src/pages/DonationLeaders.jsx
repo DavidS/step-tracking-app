@@ -13,6 +13,8 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 
+import { Link as LinkIcon } from '@material-ui/icons';
+
 import { compose } from 'recompose';
 import { withAuth } from '@okta/okta-react/dist/index';
 import PropTypes from 'prop-types';
@@ -31,7 +33,7 @@ const styles = theme => ({
 
 const API = process.env.REACT_APP_API || 'http://localhost:3003';
 
-class Dashboard extends Component {
+class DonationLeaders extends Component {
   static propTypes = {
     // eslint-disable-next-line
     classes: PropTypes.object.isRequired,
@@ -51,7 +53,7 @@ class Dashboard extends Component {
   }
 
   async getData() {
-    const dashData = await this.fetch('get', '/dashboard');
+    const dashData = await this.fetch('get', '/donationLeaders');
     this.setState({ loading: false, dashData });
   }
 
@@ -104,7 +106,9 @@ class Dashboard extends Component {
               <TableRow>
                 <TableCell>Rank</TableCell>
                 <TableCell>Name</TableCell>
-                <TableCell>Step Count</TableCell>
+                <TableCell>Charity</TableCell>
+                <TableCell>Fundraising Link</TableCell>
+                <TableCell>Total Donations</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -112,7 +116,9 @@ class Dashboard extends Component {
                 <TableRow key={row.rank}>
                   <TableCell align="right">{row.rank}</TableCell>
                   <TableCell align="right">{row.name}</TableCell>
-                  <TableCell align="right">{row.steps}</TableCell>
+                  <TableCell align="right">{row.charity_name}</TableCell>
+                  <TableCell align="right"><a rel="noopener noreferrer" target="_blank" href={row.fundraising_link}><LinkIcon/></a></TableCell>
+                  <TableCell align="right">{row.total_donations}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -127,7 +133,7 @@ class Dashboard extends Component {
 
     return (
       <Fragment>
-        <Typography variant="display1">Leader Board</Typography>
+        <Typography variant="display1">Donation Leaders</Typography>
         {content}
       </Fragment>
     );
@@ -137,4 +143,4 @@ class Dashboard extends Component {
 export default compose(
   withAuth,
   withStyles(styles),
-)(Dashboard);
+)(DonationLeaders);
