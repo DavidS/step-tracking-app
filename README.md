@@ -3,3 +3,4 @@
 - Ability to show regional leaderboards
 - ~~New leaderboard, ranked by donation amount~~
 - Logo's / copy changes
+- Live reload of dashboards
