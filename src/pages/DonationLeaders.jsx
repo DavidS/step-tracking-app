@@ -15,10 +15,12 @@ import {
 
 import { Link as LinkIcon } from '@material-ui/icons';
 
+import FlipMove from 'react-flip-move';
 import { compose } from 'recompose';
 import { withAuth } from '@okta/okta-react/dist/index';
 import PropTypes from 'prop-types';
 import log from '../utils/log';
+import sockets from '../utils/socket';
 
 const styles = theme => ({
   root: {
@@ -50,6 +52,16 @@ class DonationLeaders extends Component {
 
   componentDidMount() {
     this.getData();
+    const { io } = sockets;
+    io.on('fetchNewData', () => {
+      console.log('Getting New Data');
+      this.getData();
+    });
+  }
+
+  componentWillUnmount() {
+    const { io } = sockets;
+    io.removeListener('fetchNewData');
   }
 
   async getData() {
@@ -83,58 +95,81 @@ class DonationLeaders extends Component {
   render() {
     const { classes } = this.props;
     const { dashData, loading } = this.state;
-    let content = null;
-    if (loading) {
-      content = (
-        <div className={classes.loading}>
-          <Fade
-            in={loading}
-            style={{
-              transitionDelay: loading ? '500ms' : '0ms',
-            }}
-            unmountOnExit
-          >
-            <CircularProgress />
-          </Fade>
-        </div>
-      );
-    } else if (dashData.length > 0) {
-      content = (
-        <Paper className={classes.root}>
-          <Table className={classes.table}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Rank</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Charity</TableCell>
-                <TableCell>Fundraising Link</TableCell>
-                <TableCell>Total Donations</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {dashData.map(row => (
-                <TableRow key={row.rank}>
-                  <TableCell align="right">{row.rank}</TableCell>
-                  <TableCell align="right">{row.name}</TableCell>
-                  <TableCell align="right">{row.charity_name}</TableCell>
-                  <TableCell align="right"><a rel="noopener noreferrer" target="_blank" href={row.fundraising_link}><LinkIcon/></a></TableCell>
-                  <TableCell align="right">{row.total_donations}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Paper>
-      );
-    } else {
-      content = (
-        <Typography variant="subheading">No data to display</Typography>
-      );
-    }
 
     return (
       <Fragment>
         <Typography variant="display1">Donation Leaders</Typography>
-        {content}
+        {loading && (
+          <div className={classes.loading}>
+            <Fade
+              in={loading}
+              style={{
+                transitionDelay: loading ? '500ms' : '0ms',
+              }}
+              unmountOnExit
+            >
+              <CircularProgress />
+            </Fade>
+          </div>
+        )}
+        {dashData.length > 0 ? (
+          <Paper className={classes.root}>
+            <Table className={classes.table}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Rank</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Charity</TableCell>
+                  <TableCell>Fundraising Link</TableCell>
+                  <TableCell>Total Donations</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <FlipMove
+                  duration={500}
+                  delay={10}
+                  easing="cubic-bezier(0.25, 0.5, 0.75, 1)"
+                  staggerDurationBy={30}
+                  staggerDelayBy={10}
+                  onStart={(elem, node) => {
+                    // eslint-disable-next-line
+                    node.style.backgroundColor = '#F7EDDE';
+                  }}
+                  onFinish={(elem, node) => {
+                    // eslint-disable-next-line
+                    node.style.backgroundColor = 'white';
+                  }}
+                  enterAnimation={false}
+                  leaveAnimation={false}
+                  maintainContainerHeight
+                  typeName={null}
+                >
+                  {dashData.map(row => (
+                    <TableRow key={row.rank} id={row.rank}>
+                      <TableCell align="right">{row.rank}</TableCell>
+                      <TableCell align="right">{row.name}</TableCell>
+                      <TableCell align="right">{row.charity_name}</TableCell>
+                      <TableCell align="right">
+                        <a
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          href={row.fundraising_link}
+                        >
+                          <LinkIcon />
+                        </a>
+                      </TableCell>
+                      <TableCell align="right">{row.total_donations}</TableCell>
+                    </TableRow>
+                  ))}
+                </FlipMove>
+              </TableBody>
+            </Table>
+          </Paper>
+        ) : (
+          !loading && (
+            <Typography variant="subheading"> No data to display </Typography>
+          )
+        )}
       </Fragment>
     );
   }
