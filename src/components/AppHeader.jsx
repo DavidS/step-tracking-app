@@ -7,6 +7,8 @@ import {
   Toolbar,
   Typography,
 } from '@material-ui/core';
+import { withAuth } from '@okta/okta-react';
+import { compose } from 'recompose';
 
 import logo from '../puppet-logo.svg';
 import LoginButton from './LoginButton';
@@ -17,7 +19,10 @@ const styles = {
   },
 };
 
-const AppHeader = ({ classes }) => (
+const API = process.env.REACT_APP_API || 'http://localhost:3003';
+const deleteDatabase = Boolean(process.env.REACT_APP_DELETE_DB);
+
+const AppHeader = ({ classes, auth: { getAccessToken } }) => (
   <AppBar position="static" style={{ backgroundColor: '#222222' }}>
     <Toolbar>
       <img
@@ -45,10 +50,31 @@ const AppHeader = ({ classes }) => (
       <Button color="inherit" component={Link} to="/profile">
         My Fundraising
       </Button>
+      {deleteDatabase && (
+        <Button
+          color="inherit"
+          onClick={async () => {
+            const accessToken = await getAccessToken();
+            fetch(`${API}/DeleteTheFreakingDatabaseNOW`, {
+              method: 'get',
+              headers: {
+                'content-type': 'application/json',
+                accept: 'application/json',
+                authorization: `Bearer ${accessToken}`,
+              },
+            });
+          }}
+        >
+          Seek And Destrooooooy!
+        </Button>
+      )}
       <div className={classes.flex} />
       <LoginButton />
     </Toolbar>
   </AppBar>
 );
 
-export default withStyles(styles)(AppHeader);
+export default compose(
+  withAuth,
+  withStyles(styles),
+)(AppHeader);

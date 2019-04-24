@@ -77,6 +77,17 @@ app.route('/donationLeaders').get((req, res) => {
     });
 });
 
+// This Route is for deleting ALL data from the database !
+app.route('/DeleteTheFreakingDatabaseNOW').get(async (req, res) => {
+  await database.query(`DROP SCHEMA public CASCADE;`);
+  await database.query(`CREATE SCHEMA public;`);
+  await database.query(`GRANT ALL ON SCHEMA public TO postgres;`);
+  await database.query(`GRANT ALL ON SCHEMA public TO public;`);
+  await database.query(`COMMENT ON SCHEMA public IS 'standard public schema';`);
+
+  res.json({ Hello: 'World' });
+});
+
 const Step = database.define(
   'steps',
   {
