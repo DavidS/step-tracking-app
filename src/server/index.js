@@ -126,6 +126,7 @@ const Profile = database.define(
     totalDonations: { type: Sequelize.INTEGER, field: 'total_donations' },
     fundraisingLink: { type: Sequelize.STRING, field: 'fundraising_link' },
     region: Sequelize.STRING,
+    currency: Sequelize.STRING,
   },
   { underscored: true },
 );
