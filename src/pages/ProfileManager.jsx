@@ -88,6 +88,45 @@ const regions = [
   },
 ];
 
+const currencies =[
+  {
+    value: 'USD',
+    label: 'USD',
+  },
+  {
+    value: 'GBP',
+    label: 'GBP',
+  },
+  {
+    value: 'AUD',
+    label: 'AUD',
+  },
+  {
+    value: 'SGD',
+    label: 'SGD',
+  },
+  {
+    value: 'RON',
+    label: 'RON',
+  },
+  {
+    value: 'CZK',
+    label: 'CZK',
+  },
+  {
+    value: 'EUR',
+    label: 'EUR',
+  },
+  {
+    value: 'SEK',
+    label: 'SEK',
+  },
+  {
+    value: 'CAD',
+    label: 'CAD',
+  },
+];
+
 class ProfileManager extends Component {
   static propTypes = {
     // eslint-disable-next-line
@@ -120,6 +159,7 @@ class ProfileManager extends Component {
         totalDonations: null,
         fundraisingLink: null,
         region: null,
+        currency: null,
       },
     });
   }
@@ -193,6 +233,22 @@ class ProfileManager extends Component {
             margin="normal"
             fullWidth
           />
+          <TextField
+            id="currency"
+            select
+            label="Currency"
+            value={this.state.data.currency || ''}
+            onChange={this.handleChange('currency')}
+            helperText="Which currency is your donation in?"
+            margin="normal"
+            fullWidth
+          >
+            {currencies.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
           <TextField
             id="charity"
             label="Charity Name"
