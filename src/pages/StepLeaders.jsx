@@ -102,7 +102,7 @@ class StepLeaders extends Component {
 
     return (
       <Fragment>
-        <Typography variant="display1">Step Leaders</Typography>
+        <Typography variant="display1">Step Leaders - Global Step Count: {dashData.global_steps} </Typography>
         {loading && (
           <div className={classes.loading}>
             <Fade
@@ -116,7 +116,7 @@ class StepLeaders extends Component {
             </Fade>
           </div>
         )}
-        {dashData.length > 0 ? (
+        {'leaders' in dashData ? (
           <Paper className={classes.root}>
             <Table className={classes.table}>
               <TableHead>
@@ -148,7 +148,7 @@ class StepLeaders extends Component {
                   maintainContainerHeight
                   typeName={null}
                 >
-                  {dashData.map(row => (
+                  {dashData.leaders.map(row => (
                     <TableRow key={row.name} id={row.name}>
                       <TableCell align="right">{row.rank}</TableCell>
                       <TableCell align="right">{row.name}</TableCell>

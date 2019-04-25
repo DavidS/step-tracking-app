@@ -78,10 +78,10 @@ app.use(async (req, res, next) => {
 app.route('/stepLeaders').get((req, res) => {
   database
     .query(
-      'SELECT RANK () OVER(ORDER BY SUM(steps) DESC) as rank, steps.name, charity_name, fundraising_link, SUM(steps) as steps FROM steps LEFT JOIN profiles USING (user_id) GROUP BY steps.name, user_id, charity_name, fundraising_link',
+      'SELECT SUM(steps) as global_steps FROM steps; SELECT RANK () OVER(ORDER BY SUM(steps) DESC) as rank, steps.name, charity_name, fundraising_link, SUM(steps) as steps FROM steps LEFT JOIN profiles USING (user_id) GROUP BY steps.name, user_id, charity_name, fundraising_link',
     )
     .then(steps => {
-      res.json(steps[0]);
+      res.json({ global_steps: steps[0][0].global_steps, leaders: steps[0].slice(1) });
     });
 });
 
