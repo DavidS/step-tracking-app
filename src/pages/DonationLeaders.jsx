@@ -158,7 +158,7 @@ class DonationLeaders extends Component {
                           <LinkIcon />
                         </a>
                       </TableCell>
-                      <TableCell align="right">{row.total_donations}</TableCell>
+                      <TableCell align="right">{row.currency} {row.total_donations}</TableCell>
                     </TableRow>
                   ))}
                 </FlipMove>
