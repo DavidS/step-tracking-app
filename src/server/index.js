@@ -88,7 +88,7 @@ app.route('/stepLeaders').get((req, res) => {
 app.route('/donationLeaders').get((req, res) => {
   database
     .query(
-      'SELECT RANK () OVER(ORDER BY total_donations DESC) as rank, name, charity_name, fundraising_link, total_donations FROM profiles GROUP BY name, user_id, charity_name, fundraising_link',
+      'SELECT RANK () OVER(ORDER BY total_donations DESC) as rank, name, charity_name, fundraising_link, total_donations, currency FROM profiles GROUP BY name, user_id, charity_name, fundraising_link',
     )
     .then(steps => {
       res.json(steps[0]);
