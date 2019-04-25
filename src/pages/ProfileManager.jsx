@@ -39,7 +39,7 @@ const styles = theme => ({
     },
   },
 });
-// BFS, LON, TSR, PDX, SEA, SYD, SIN, TYO, REMOTE EMEA, REMOTE APJ, REMOTE AMER
+// BFS, LON, TSR, PDX, SEA, SYD, SIN, REMOTE EMEA, REMOTE APJ, REMOTE AMER
 const regions = [
   {
     value: '',
@@ -72,10 +72,6 @@ const regions = [
   {
     value: 'SIN',
     label: 'Singapore (SIN)',
-  },
-  {
-    value: 'TYO',
-    label: 'Tokyo (TYO)',
   },
   {
     value: 'REMOTE EMEA',
