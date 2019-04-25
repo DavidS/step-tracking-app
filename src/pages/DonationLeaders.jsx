@@ -98,7 +98,7 @@ class DonationLeaders extends Component {
 
     return (
       <Fragment>
-        <Typography variant="display1">Donation Leaders</Typography>
+        <Typography variant="display1">Donation Leaders - Total Donations: USD {dashData.total_donations}</Typography>
         {loading && (
           <div className={classes.loading}>
             <Fade
@@ -112,7 +112,7 @@ class DonationLeaders extends Component {
             </Fade>
           </div>
         )}
-        {dashData.length > 0 ? (
+        {'leaders' in dashData ? (
           <Paper className={classes.root}>
             <Table className={classes.table}>
               <TableHead>
@@ -144,7 +144,7 @@ class DonationLeaders extends Component {
                   maintainContainerHeight
                   typeName={null}
                 >
-                  {dashData.map(row => (
+                  {dashData.leaders.map(row => (
                     <TableRow key={row.name} id={row.name}>
                       <TableCell align="right">{row.rank}</TableCell>
                       <TableCell align="right">{row.name}</TableCell>
@@ -162,6 +162,13 @@ class DonationLeaders extends Component {
                     </TableRow>
                   ))}
                 </FlipMove>
+              </TableBody>
+            </Table>
+            <Table>
+              <TableBody>
+                <TableCell>
+                  * currency conversions as of 2019-04-25: USD 1 = GBP 1.29 = AUD 0.7 = SGD 0.73 = EUR 1.11 = RON 0.23 = CZK 0.043 = SEK 0.1 = CAD 0.74
+                </TableCell>
               </TableBody>
             </Table>
           </Paper>

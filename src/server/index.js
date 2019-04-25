@@ -51,6 +51,8 @@ const io = socketIO(ioServer, {
   cookie: false,
 });
 
+const currency_multiplier = 'CASE currency WHEN \'USD\' THEN 1 WHEN \'GBP\' THEN 1.29 WHEN \'AUD\' THEN 0.7 WHEN \'SGD\' THEN 0.73 WHEN \'EUR\' THEN 1.11 WHEN \'RON\' THEN 0.23 WHEN \'CZK\' THEN 0.043 WHEN \'SEK\' THEN 0.1 WHEN \'CAD\' THEN 0.74 END';
+
 ioServer.listen(3008);
 
 app.use(cors());
@@ -88,10 +90,10 @@ app.route('/stepLeaders').get((req, res) => {
 app.route('/donationLeaders').get((req, res) => {
   database
     .query(
-      'SELECT RANK () OVER(ORDER BY total_donations DESC) as rank, name, charity_name, fundraising_link, total_donations, currency FROM profiles GROUP BY name, user_id, charity_name, fundraising_link',
+      'SELECT SUM(total_donations * ' + currency_multiplier + ') as total_donations FROM profiles; SELECT RANK () OVER(ORDER BY total_donations * ' + currency_multiplier + ' DESC) as rank, name, charity_name, fundraising_link, total_donations, currency FROM profiles GROUP BY name, user_id, charity_name, fundraising_link',
     )
-    .then(steps => {
-      res.json(steps[0]);
+    .then(donors => {
+      res.json({ total_donations: donors[0][0].total_donations, leaders: donors[0].slice(1) });
     });
 });
 
