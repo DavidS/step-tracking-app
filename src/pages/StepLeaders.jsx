@@ -149,7 +149,7 @@ class StepLeaders extends Component {
                   typeName={null}
                 >
                   {dashData.map(row => (
-                    <TableRow key={row.rank} id={row.rank}>
+                    <TableRow key={row.name} id={row.name}>
                       <TableCell align="right">{row.rank}</TableCell>
                       <TableCell align="right">{row.name}</TableCell>
                       <TableCell align="right">{row.charity_name}</TableCell>
