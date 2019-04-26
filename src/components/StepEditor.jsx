@@ -1,4 +1,6 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { history as historyPropTypes } from 'history-prop-types';
 import {
   withStyles,
   Card,
@@ -57,10 +59,10 @@ const StepEditor = ({ classes, step, onSave, history }) => (
             </CardContent>
             <CardActions>
               <Button size="small" color="primary" type="submit">
-                Save
+                {'Save'}
               </Button>
               <Button size="small" onClick={() => history.goBack()}>
-                Cancel
+                {'Cancel'}
               </Button>
             </CardActions>
           </form>
@@ -69,6 +71,14 @@ const StepEditor = ({ classes, step, onSave, history }) => (
     )}
   </Form>
 );
+
+StepEditor.propTypes = {
+  // eslint-disable-next-line
+   classes: PropTypes.object.isRequired,
+  step: PropTypes.number.isRequired,
+  onSave: PropTypes.func.isRequired,
+  history: PropTypes.shape(historyPropTypes).isRequired,
+};
 
 export default compose(
   withRouter,
