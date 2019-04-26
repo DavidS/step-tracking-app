@@ -88,7 +88,7 @@ const regions = [
   },
 ];
 
-const currencies =[
+const currencies = [
   {
     value: 'USD',
     label: 'USD',
@@ -214,7 +214,7 @@ class ProfileManager extends Component {
   render() {
     const { classes } = this.props;
     const {
-      data: { totalDonations, charityName, fundraisingLink, region },
+      data: { totalDonations, charityName, fundraisingLink, region, currency },
     } = this.state;
 
     return (
@@ -237,8 +237,8 @@ class ProfileManager extends Component {
             id="currency"
             select
             label="Currency"
-            value={this.state.data.currency || ''}
-            onChange={this.handleChange('currency')}
+            value={currency || ''}
+            onChange={event => this.handleChange('currency', event)}
             helperText="Which currency is your donation in?"
             margin="normal"
             fullWidth

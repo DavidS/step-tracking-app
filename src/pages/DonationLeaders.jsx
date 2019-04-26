@@ -47,7 +47,7 @@ class DonationLeaders extends Component {
 
   state = {
     loading: true,
-    dashData: [],
+    dashData: {},
   };
 
   componentDidMount() {
@@ -95,10 +95,19 @@ class DonationLeaders extends Component {
   render() {
     const { classes } = this.props;
     const { dashData, loading } = this.state;
-
+    const { totalDonations, leaders, currencyRates } = dashData;
+    const { date, rates } = currencyRates || {};
+    let currencyDisclaimer = `* currency conversions as of ${date}: EUR 1`;
+    if (rates) {
+      Object.keys(rates).forEach(key => {
+        currencyDisclaimer += `, ${key} = ${rates[key]}`;
+      });
+    }
     return (
       <Fragment>
-        <Typography variant="display1">Donation Leaders - Total Donations: USD {dashData.total_donations}</Typography>
+        <Typography variant="display1">
+          {`Donation Leaders - Total Donations: USD ${totalDonations || 0}`}
+        </Typography>
         {loading && (
           <div className={classes.loading}>
             <Fade
@@ -112,7 +121,7 @@ class DonationLeaders extends Component {
             </Fade>
           </div>
         )}
-        {'leaders' in dashData ? (
+        {leaders && leaders.length > 0 ? (
           <Paper className={classes.root}>
             <Table className={classes.table}>
               <TableHead>
@@ -144,7 +153,7 @@ class DonationLeaders extends Component {
                   maintainContainerHeight
                   typeName={null}
                 >
-                  {dashData.leaders.map(row => (
+                  {leaders.map(row => (
                     <TableRow key={row.name} id={row.name}>
                       <TableCell align="right">{row.rank}</TableCell>
                       <TableCell align="right">{row.name}</TableCell>
@@ -158,7 +167,9 @@ class DonationLeaders extends Component {
                           <LinkIcon />
                         </a>
                       </TableCell>
-                      <TableCell align="right">{row.currency} {row.total_donations}</TableCell>
+                      <TableCell align="right">
+                        {row.currency} {row.total_donations}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </FlipMove>
@@ -166,9 +177,7 @@ class DonationLeaders extends Component {
             </Table>
             <Table>
               <TableBody>
-                <TableCell>
-                  * currency conversions as of 2019-04-25: USD 1 = GBP 1.29 = AUD 0.7 = SGD 0.73 = EUR 1.11 = RON 0.23 = CZK 0.043 = SEK 0.1 = CAD 0.74
-                </TableCell>
+                <TableCell>{currencyDisclaimer}</TableCell>
               </TableBody>
             </Table>
           </Paper>
