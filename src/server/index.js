@@ -7,6 +7,8 @@ import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
 import epilogue from 'epilogue';
 import OktaJwtVerifier from '@okta/jwt-verifier';
+import xml2json from 'xml2json';
+import fetch from 'node-fetch';
 import log from './log';
 
 dotenv.config({
@@ -53,6 +55,50 @@ const io = socketIO(ioServer, {
 
 ioServer.listen(3008);
 
+const desiredRates = ['USD', 'GBP', 'AUD', 'SGD', 'RON', 'CZK', 'SEK', 'CAD'];
+const currenciesRate = {};
+let currencyDate = '';
+let currencyMultiplier = `CASE currency WHEN 'USD' THEN 1 WHEN 'GBP' THEN 1.29 WHEN 'AUD' THEN 0.7 WHEN 'SGD' THEN 0.73 WHEN 'EUR' THEN 1.11 WHEN 'RON' THEN 0.23 WHEN 'CZK' THEN 0.043 WHEN 'SEK' THEN 0.1 WHEN 'CAD' THEN 0.74 END`;
+
+function fetchRates() {
+  fetch('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
+    .then(res => res.text())
+    .then(xml => {
+      const json = JSON.parse(xml2json.toJson(xml));
+
+      currencyDate = json['gesmes:Envelope'].Cube.Cube.time;
+
+      const rates = json['gesmes:Envelope'].Cube.Cube.Cube;
+
+      rates.forEach(({ currency, rate }) => {
+        if (desiredRates.indexOf(currency) > -1) {
+          currenciesRate[currency] = rate;
+        }
+      });
+      console.log('Fetched latest Currency Rates !');
+      console.log(currenciesRate);
+      currencyMultiplier = `CASE currency WHEN 'USD' THEN ${
+        currenciesRate.USD
+      } WHEN 'GBP' THEN ${currenciesRate.GBP} WHEN 'AUD' THEN ${
+        currenciesRate.AUD
+      } WHEN 'SGD' THEN ${
+        currenciesRate.SGD
+      } WHEN 'EUR' THEN 1 WHEN 'RON' THEN ${
+        currenciesRate.RON
+      } WHEN 'CZK' THEN ${currenciesRate.CZK} WHEN 'SEK' THEN ${
+        currenciesRate.SEK
+      } WHEN 'CAD' THEN ${currenciesRate.SEK} END`;
+    });
+
+  io.emit('fetchNewData');
+}
+
+fetchRates();
+// Get new Rates every 6 hours
+setInterval(() => {
+  fetchRates();
+}, 21600000);
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -78,32 +124,31 @@ app.use(async (req, res, next) => {
 app.route('/stepLeaders').get((req, res) => {
   database
     .query(
-      'SELECT RANK () OVER(ORDER BY SUM(steps) DESC) as rank, steps.name, charity_name, fundraising_link, SUM(steps) as steps FROM steps LEFT JOIN profiles USING (user_id) GROUP BY steps.name, user_id, charity_name, fundraising_link',
+      'SELECT SUM(steps) as totalSteps FROM steps; SELECT RANK () OVER(ORDER BY SUM(steps) DESC) as rank, steps.name, charity_name, fundraising_link, SUM(steps) as steps FROM steps LEFT JOIN profiles USING (user_id) GROUP BY steps.name, user_id, charity_name, fundraising_link',
     )
     .then(steps => {
-      res.json(steps[0]);
+      res.json({
+        totalSteps: steps[0][0].totalSteps,
+        leaders: steps[0].slice(1),
+      });
     });
 });
 
 app.route('/donationLeaders').get((req, res) => {
   database
     .query(
-      'SELECT RANK () OVER(ORDER BY total_donations DESC) as rank, name, charity_name, fundraising_link, total_donations FROM profiles GROUP BY name, user_id, charity_name, fundraising_link',
+      `SELECT SUM(total_donations * ${currencyMultiplier}) as total_donations FROM profiles; SELECT RANK () OVER(ORDER BY total_donations * ${currencyMultiplier} DESC) as rank, name, charity_name, fundraising_link, total_donations, currency FROM profiles GROUP BY name, user_id, charity_name, fundraising_link`,
     )
-    .then(steps => {
-      res.json(steps[0]);
+    .then(donors => {
+      res.json({
+        totalDonations: donors[0][0].total_donations,
+        leaders: donors[0].slice(1),
+        currencyRates: {
+          date: currencyDate,
+          rates: currenciesRate,
+        },
+      });
     });
-});
-
-// This Route is for deleting ALL data from the database !
-app.route('/DeleteTheFreakingDatabaseNOW').get(async (req, res) => {
-  await database.query(`DROP SCHEMA public CASCADE;`);
-  await database.query(`CREATE SCHEMA public;`);
-  await database.query(`GRANT ALL ON SCHEMA public TO postgres;`);
-  await database.query(`GRANT ALL ON SCHEMA public TO public;`);
-  await database.query(`COMMENT ON SCHEMA public IS 'standard public schema';`);
-
-  res.json({ Hello: 'World' });
 });
 
 const Step = database.define(
@@ -126,6 +171,7 @@ const Profile = database.define(
     totalDonations: { type: Sequelize.INTEGER, field: 'total_donations' },
     fundraisingLink: { type: Sequelize.STRING, field: 'fundraising_link' },
     region: Sequelize.STRING,
+    currency: Sequelize.STRING,
   },
   { underscored: true },
 );

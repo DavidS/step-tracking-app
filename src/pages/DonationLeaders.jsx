@@ -47,7 +47,7 @@ class DonationLeaders extends Component {
 
   state = {
     loading: true,
-    dashData: [],
+    dashData: {},
   };
 
   componentDidMount() {
@@ -95,10 +95,19 @@ class DonationLeaders extends Component {
   render() {
     const { classes } = this.props;
     const { dashData, loading } = this.state;
-
+    const { totalDonations, leaders, currencyRates } = dashData;
+    const { date, rates } = currencyRates || {};
+    let currencyDisclaimer = `* currency conversions as of ${date}: EUR 1`;
+    if (rates) {
+      Object.keys(rates).forEach(key => {
+        currencyDisclaimer += `, ${key} = ${rates[key]}`;
+      });
+    }
     return (
       <Fragment>
-        <Typography variant="display1">Donation Leaders</Typography>
+        <Typography variant="display1">
+          {`Donation Leaders - Total Donations: USD ${totalDonations || 0}`}
+        </Typography>
         {loading && (
           <div className={classes.loading}>
             <Fade
@@ -112,7 +121,7 @@ class DonationLeaders extends Component {
             </Fade>
           </div>
         )}
-        {dashData.length > 0 ? (
+        {leaders && leaders.length > 0 ? (
           <Paper className={classes.root}>
             <Table className={classes.table}>
               <TableHead>
@@ -144,7 +153,7 @@ class DonationLeaders extends Component {
                   maintainContainerHeight
                   typeName={null}
                 >
-                  {dashData.map(row => (
+                  {leaders.map(row => (
                     <TableRow key={row.name} id={row.name}>
                       <TableCell align="right">{row.rank}</TableCell>
                       <TableCell align="right">{row.name}</TableCell>
@@ -158,10 +167,17 @@ class DonationLeaders extends Component {
                           <LinkIcon />
                         </a>
                       </TableCell>
-                      <TableCell align="right">{row.total_donations}</TableCell>
+                      <TableCell align="right">
+                        {row.currency} {row.total_donations}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </FlipMove>
+              </TableBody>
+            </Table>
+            <Table>
+              <TableBody>
+                <TableCell>{currencyDisclaimer}</TableCell>
               </TableBody>
             </Table>
           </Paper>
