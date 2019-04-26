@@ -11,8 +11,6 @@ const oktaConfig = {
   client_id: process.env.REACT_APP_OKTA_CLIENT_ID,
 };
 
-console.log(oktaConfig);
-
 ReactDOM.render(
   // eslint-disable-next-line
   <BrowserRouter>

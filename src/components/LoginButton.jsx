@@ -47,7 +47,7 @@ class LoginButton extends Component {
       const user = await getUser();
 
       this.setState({
-        authenticated,
+        authenticated: isUserAuthenticated,
         user,
       });
     }
