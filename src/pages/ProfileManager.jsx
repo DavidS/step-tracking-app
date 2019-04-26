@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withAuth } from '@okta/okta-react';
 import { withRouter } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import {
   Button,
   withStyles,
@@ -92,8 +93,16 @@ const regions = [
 ];
 
 class ProfileManager extends Component {
+  static propTypes = {
+    // eslint-disable-next-line
+    classes: PropTypes.object.isRequired,
+    auth: PropTypes.shape({
+      getUser: PropTypes.func.isRequired,
+      getAccessToken: PropTypes.func.isRequired,
+    }).isRequired,
+  };
+
   state = {
-    loading: true,
     data: {},
   };
 
@@ -105,28 +114,10 @@ class ProfileManager extends Component {
     this.getData();
   }
 
-  async fetch(method, endpoint, body) {
-    try {
-      const response = await fetch(`${API}${endpoint}`, {
-        method,
-        body: body && JSON.stringify(body),
-        headers: {
-          'content-type': 'application/json',
-          accept: 'application/json',
-          authorization: `Bearer ${await this.props.auth.getAccessToken()}`,
-        },
-      });
-      return await response.json();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   async getData() {
     const { sub } = this.user;
     this.data = await this.fetch('get', `/profiles/${sub}`);
     this.setState({
-      loading: false,
       data: this.data || {
         userId: null,
         charityName: null,
@@ -138,39 +129,70 @@ class ProfileManager extends Component {
   }
 
   async saveData() {
-    if (this.state.data.userId) {
-      await this.fetch(
-        'put',
-        `/profiles/${this.state.data.userId}`,
-        this.state.data,
-      );
+    const { data } = this.state;
+    const { userId } = data;
+    if (userId) {
+      await this.fetch('put', `/profiles/${userId}`, data);
     } else {
       const { name, sub } = this.user;
       await this.fetch('post', '/profiles', {
-        ...this.state.data,
-        name: name,
+        ...data,
+        name,
         userId: sub,
       });
     }
   }
 
-  handleChange = name => event => {
-    this.setState({ data: { ...this.state.data, [name]: event.target.value } });
-  };
+  handleChange(name, event) {
+    const { data } = this.state;
+    this.setState({
+      data: {
+        ...data,
+        [name]: event.target.value,
+      },
+    });
+  }
+
+  async fetch(method, endpoint, body) {
+    const {
+      auth: { getAccessToken },
+    } = this.props;
+    const token = await getAccessToken();
+    try {
+      const response = await fetch(`${API}${endpoint}`, {
+        method,
+        body: body && JSON.stringify(body),
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json',
+          authorization: `Bearer ${token}`,
+        },
+      });
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return { error };
+    }
+  }
 
   render() {
     const { classes } = this.props;
+    const {
+      data: { totalDonations, charityName, fundraisingLink, region },
+    } = this.state;
 
     return (
       <Fragment>
-        <Typography variant="display1">Hows the fundraising going?</Typography>
+        <Typography variant="display1">
+          {'Hows the fundraising going?'}
+        </Typography>
         <form className={classes.container} noValidate autoComplete="off">
           <TextField
             id="donations"
             label="Total Donations so far"
             type="number"
-            value={this.state.data.totalDonations || ''}
-            onChange={this.handleChange('totalDonations')}
+            value={totalDonations || ''}
+            onChange={event => this.handleChange('totalDonations', event)}
             helperText="How much have you raised?  Keep this up-to-date (there is a leader board for it)."
             margin="normal"
             fullWidth
@@ -178,8 +200,8 @@ class ProfileManager extends Component {
           <TextField
             id="charity"
             label="Charity Name"
-            value={this.state.data.charityName || ''}
-            onChange={this.handleChange('charityName')}
+            value={charityName || ''}
+            onChange={event => this.handleChange('charityName', event)}
             helperText="Who is benefiting from your hard work?"
             margin="normal"
             fullWidth
@@ -187,8 +209,8 @@ class ProfileManager extends Component {
           <TextField
             id="link"
             label="Fundraising Link"
-            value={this.state.data.fundraisingLink || ''}
-            onChange={this.handleChange('fundraisingLink')}
+            value={fundraisingLink || ''}
+            onChange={event => this.handleChange('fundraisingLink', event)}
             helperText="This might be your JustGiving page.  We'll display this link beside your name on the leader boards."
             margin="normal"
             fullWidth
@@ -197,8 +219,8 @@ class ProfileManager extends Component {
             id="region"
             select
             label="Region"
-            value={this.state.data.region || ''}
-            onChange={this.handleChange('region')}
+            value={region || ''}
+            onChange={event => this.handleChange('region', event)}
             helperText="Which region are you in?"
             margin="normal"
             fullWidth

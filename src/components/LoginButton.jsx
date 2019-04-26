@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {
   Button,
   IconButton,
@@ -10,48 +11,64 @@ import { AccountCircle } from '@material-ui/icons';
 import { withAuth } from '@okta/okta-react';
 
 class LoginButton extends Component {
+  static propTypes = {
+    auth: PropTypes.shape({
+      getUser: PropTypes.func.isRequired,
+      getAccessToken: PropTypes.func.isRequired,
+    }).isRequired,
+  };
+
   state = {
     authenticated: null,
     user: null,
     menuAnchorEl: null,
   };
 
-  componentDidUpdate() {
-    this.checkAuthentication();
-  }
-
   componentDidMount() {
     this.checkAuthentication();
   }
 
-  async checkAuthentication() {
-    const authenticated = await this.props.auth.isAuthenticated();
-    if (authenticated !== this.state.authenticated) {
-      const user = await this.props.auth.getUser();
-      this.setState({ authenticated, user });
-    }
+  componentDidUpdate() {
+    this.checkAuthentication();
   }
-
-  login = () => this.props.auth.login();
-
-  logout = () => {
-    this.handleMenuClose();
-    this.props.auth.logout();
-  };
 
   handleMenuOpen = event =>
     this.setState({ menuAnchorEl: event.currentTarget });
 
   handleMenuClose = () => this.setState({ menuAnchorEl: null });
 
+  async checkAuthentication() {
+    const {
+      auth: { isAuthenticated, getUser },
+    } = this.props;
+    const { authenticated } = this.state;
+    const isUserAuthenticated = await isAuthenticated();
+    if (isUserAuthenticated !== authenticated) {
+      const user = await getUser();
+
+      this.setState({
+        authenticated,
+        user,
+      });
+    }
+  }
+
   render() {
     const { authenticated, user, menuAnchorEl } = this.state;
+    const {
+      auth: { login },
+    } = this.props;
 
     if (authenticated == null) return null;
     if (!authenticated)
       return (
-        <Button color="inherit" onClick={this.login}>
-          Login
+        <Button
+          color="inherit"
+          onClick={() => {
+            login();
+          }}
+        >
+          {'Login'}
         </Button>
       );
 
@@ -72,7 +89,15 @@ class LoginButton extends Component {
           open={!!menuAnchorEl}
           onClose={this.handleMenuClose}
         >
-          <MenuItem onClick={this.logout}>
+          <MenuItem
+            onClick={() => {
+              const {
+                auth: { logout },
+              } = this.props;
+              this.handleMenuClose();
+              logout();
+            }}
+          >
             <ListItemText primary="Logout" secondary={user && user.name} />
           </MenuItem>
         </Menu>

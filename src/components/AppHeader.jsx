@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import {
   AppBar,
   Button,
@@ -7,7 +8,6 @@ import {
   Toolbar,
   Typography,
 } from '@material-ui/core';
-import { compose } from 'recompose';
 
 import logo from '../puppet-logo.svg';
 import LoginButton from './LoginButton';
@@ -32,19 +32,19 @@ const AppHeader = ({ classes }) => (
         color="inherit"
         style={{ paddingRight: '15px' }}
       >
-        May for Mental Health
+        {' May for Mental Health'}
       </Typography>
       <Button color="inherit" component={Link} to="/">
-        Step Leaders
+        {'Step Leaders'}
       </Button>
       <Button color="inherit" component={Link} to="/donationLeaders">
-        Donation Leaders
+        {'Donation Leaders'}
       </Button>
       <Button color="inherit" component={Link} to="/steps">
-        My Steps
+        {'My Steps'}
       </Button>
       <Button color="inherit" component={Link} to="/profile">
-        My Fundraising
+        {'My Fundraising'}
       </Button>
       <div className={classes.flex} />
       <LoginButton />
@@ -52,4 +52,9 @@ const AppHeader = ({ classes }) => (
   </AppBar>
 );
 
-export default compose(withStyles(styles))(AppHeader);
+AppHeader.propTypes = {
+  // eslint-disable-next-line
+   classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(AppHeader);
