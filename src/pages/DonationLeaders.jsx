@@ -95,9 +95,9 @@ class DonationLeaders extends Component {
   render() {
     const { classes } = this.props;
     const { dashData, loading } = this.state;
-    const { totalDonations, leaders, currencyRates } = dashData;
+    const { totalDonations = 0, leaders, currencyRates } = dashData;
     const { date, rates } = currencyRates || {};
-    let currencyDisclaimer = `* currency conversions as of ${date}: EUR 1`;
+    let currencyDisclaimer = `* currency conversions as of ${date}: USD = 1`;
     if (rates) {
       Object.keys(rates).forEach(key => {
         currencyDisclaimer += `, ${key} = ${rates[key]}`;
@@ -106,7 +106,9 @@ class DonationLeaders extends Component {
     return (
       <Fragment>
         <Typography variant="display1">
-          {`Donation Leaders - Total Donations: USD ${totalDonations || 0}`}
+          {`Donation Leaders - Total Donations: USD ${Number(
+            totalDonations,
+          ).toFixed(2)}`}
         </Typography>
         {loading && (
           <div className={classes.loading}>
