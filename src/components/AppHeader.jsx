@@ -7,6 +7,7 @@ import {
   Toolbar,
   Typography,
 } from '@material-ui/core';
+import { compose } from 'recompose';
 
 import logo from '../puppet-logo.svg';
 import LoginButton from './LoginButton';
@@ -51,4 +52,4 @@ const AppHeader = ({ classes }) => (
   </AppBar>
 );
 
-export default withStyles(styles)(AppHeader);
+export default compose(withStyles(styles))(AppHeader);

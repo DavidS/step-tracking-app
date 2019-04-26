@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import socketIO from 'socket.io';
+import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
@@ -39,12 +41,28 @@ const database = new Sequelize(
 );
 
 const app = express();
+const ioServer = http.createServer();
+const io = socketIO(ioServer, {
+  path: '/',
+  serveClient: false,
+  // below are engine.IO options
+  pingInterval: 10000,
+  pingTimeout: 5000,
+  cookie: false,
+});
+
+ioServer.listen(3008);
+
 app.use(cors());
 app.use(bodyParser.json());
 
 app.use(async (req, res, next) => {
   try {
-    if (req.path === '/stepLeaders' || req.path === '/donationLeaders') {
+    if (
+      req.path === '/stepLeaders' ||
+      req.path === '/donationLeaders' ||
+      req.path === '/DeleteTheFreakingDatabaseNOW'
+    ) {
       return next();
     }
     if (!req.headers.authorization)
@@ -75,6 +93,17 @@ app.route('/donationLeaders').get((req, res) => {
     .then(steps => {
       res.json(steps[0]);
     });
+});
+
+// This Route is for deleting ALL data from the database !
+app.route('/DeleteTheFreakingDatabaseNOW').get(async (req, res) => {
+  await database.query(`DROP SCHEMA public CASCADE;`);
+  await database.query(`CREATE SCHEMA public;`);
+  await database.query(`GRANT ALL ON SCHEMA public TO postgres;`);
+  await database.query(`GRANT ALL ON SCHEMA public TO public;`);
+  await database.query(`COMMENT ON SCHEMA public IS 'standard public schema';`);
+
+  res.json({ Hello: 'World' });
 });
 
 const Step = database.define(
@@ -108,12 +137,22 @@ const stepsResource = epilogue.resource({
   endpoints: ['/steps', '/steps/:id'],
 });
 
+stepsResource.delete.fetch.after((req, res, context) => {
+  io.emit('fetchNewData');
+  return context.continue;
+});
+
 stepsResource.delete.fetch(async (req, res, context) => {
   const accessToken = req.headers.authorization.trim().split(' ')[1];
   const jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
   if (context.instance.dataValues.userId !== jwt.claims.uid) {
     return context.error(403, 'Not your record!');
   }
+  return context.continue;
+});
+
+stepsResource.update.write.after((req, res, context) => {
+  io.emit('fetchNewData');
   return context.continue;
 });
 
@@ -126,6 +165,11 @@ stepsResource.update.write(async (req, res, context) => {
   return context.continue;
 });
 
+stepsResource.create.write.after((req, res, context) => {
+  io.emit('fetchNewData');
+  return context.continue;
+});
+
 stepsResource.create.write(async (req, res, context) => {
   const accessToken = req.headers.authorization.trim().split(' ')[1];
   const jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
@@ -135,12 +179,17 @@ stepsResource.create.write(async (req, res, context) => {
   return context.continue;
 });
 
-const profileReource = epilogue.resource({
+const profileResource = epilogue.resource({
   model: Profile,
   endpoints: ['/profiles', '/profiles/:userId'],
 });
 
-profileReource.delete.fetch(async (req, res, context) => {
+profileResource.delete.fetch.after((req, res, context) => {
+  io.emit('fetchNewData');
+  return context.continue;
+});
+
+profileResource.delete.fetch(async (req, res, context) => {
   const accessToken = req.headers.authorization.trim().split(' ')[1];
   const jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
   if (context.instance.dataValues.userId !== jwt.claims.uid) {
@@ -149,7 +198,12 @@ profileReource.delete.fetch(async (req, res, context) => {
   return context.continue;
 });
 
-profileReource.update.write(async (req, res, context) => {
+profileResource.update.write.after((req, res, context) => {
+  io.emit('fetchNewData');
+  return context.continue;
+});
+
+profileResource.update.write(async (req, res, context) => {
   const accessToken = req.headers.authorization.trim().split(' ')[1];
   const jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
   if (context.instance.dataValues.userId !== jwt.claims.uid) {
@@ -158,7 +212,12 @@ profileReource.update.write(async (req, res, context) => {
   return context.continue;
 });
 
-profileReource.create.write(async (req, res, context) => {
+profileResource.create.write.after((req, res, context) => {
+  io.emit('fetchNewData');
+  return context.continue;
+});
+
+profileResource.create.write(async (req, res, context) => {
   const accessToken = req.headers.authorization.trim().split(' ')[1];
   const jwt = await oktaJwtVerifier.verifyAccessToken(accessToken);
   if (context.instance.dataValues.userId !== jwt.claims.uid) {
