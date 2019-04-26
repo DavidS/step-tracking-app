@@ -7,7 +7,6 @@ import bodyParser from 'body-parser';
 import Sequelize from 'sequelize';
 import epilogue from 'epilogue';
 import OktaJwtVerifier from '@okta/jwt-verifier';
-import xml2json from 'xml2json';
 import fetch from 'node-fetch';
 import log from './log';
 
@@ -55,39 +54,55 @@ const io = socketIO(ioServer, {
 
 ioServer.listen(3008);
 
-const desiredRates = ['USD', 'GBP', 'AUD', 'SGD', 'RON', 'CZK', 'SEK', 'CAD'];
+const desiredRates = [
+  'USD',
+  'EUR',
+  'GBP',
+  'AUD',
+  'SGD',
+  'RON',
+  'CZK',
+  'SEK',
+  'CAD',
+];
 const currenciesRate = {};
 let currencyDate = '';
 let currencyMultiplier = `CASE currency WHEN 'USD' THEN 1 WHEN 'GBP' THEN 1.29 WHEN 'AUD' THEN 0.7 WHEN 'SGD' THEN 0.73 WHEN 'EUR' THEN 1.11 WHEN 'RON' THEN 0.23 WHEN 'CZK' THEN 0.043 WHEN 'SEK' THEN 0.1 WHEN 'CAD' THEN 0.74 END`;
 
 function fetchRates() {
-  fetch('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
-    .then(res => res.text())
-    .then(xml => {
-      const json = JSON.parse(xml2json.toJson(xml));
+  fetch('https://api.exchangeratesapi.io/latest?base=USD')
+    .then(res => res.json())
+    .then(json => {
+      currencyDate = json.date;
 
-      currencyDate = json['gesmes:Envelope'].Cube.Cube.time;
+      function getRelativeRate(from, to = 'USD') {
+        return json.rates[to] * (1 / json.rates[from]);
+      }
 
-      const rates = json['gesmes:Envelope'].Cube.Cube.Cube;
-
-      rates.forEach(({ currency, rate }) => {
-        if (desiredRates.indexOf(currency) > -1) {
-          currenciesRate[currency] = rate;
+      Object.keys(json.rates).forEach(key => {
+        if (desiredRates.indexOf(key) > 0) {
+          currenciesRate[key] = getRelativeRate(key).toFixed(3);
         }
       });
+
       console.log('Fetched latest Currency Rates !');
       console.log(currenciesRate);
-      currencyMultiplier = `CASE currency WHEN 'USD' THEN ${
-        currenciesRate.USD
-      } WHEN 'GBP' THEN ${currenciesRate.GBP} WHEN 'AUD' THEN ${
-        currenciesRate.AUD
-      } WHEN 'SGD' THEN ${
+      currencyMultiplier = `CASE currency WHEN 'USD' THEN 1 WHEN 'GBP' THEN ${
+        currenciesRate.GBP
+      } WHEN 'AUD' THEN ${currenciesRate.AUD} WHEN 'SGD' THEN ${
         currenciesRate.SGD
-      } WHEN 'EUR' THEN 1 WHEN 'RON' THEN ${
-        currenciesRate.RON
-      } WHEN 'CZK' THEN ${currenciesRate.CZK} WHEN 'SEK' THEN ${
-        currenciesRate.SEK
-      } WHEN 'CAD' THEN ${currenciesRate.SEK} END`;
+      }
+      WHEN 'EUR'
+      THEN ${currenciesRate.EUR}
+      WHEN 'RON'
+      THEN ${currenciesRate.RON}
+      WHEN 'CZK'
+      THEN ${currenciesRate.CZK}
+      WHEN 'SEK'
+      THEN ${currenciesRate.SEK}
+      WHEN 'CAD'
+      THEN ${currenciesRate.CAD}
+      END `;
     });
 
   io.emit('fetchNewData');
