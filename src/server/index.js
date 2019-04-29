@@ -27,7 +27,7 @@ const {
 
 const oktaJwtVerifier = new OktaJwtVerifier({
   clientId: REACT_APP_OKTA_CLIENT_ID,
-  issuer: `${REACT_APP_OKTA_ORG_URL}/oauth2/default`,
+  issuer: `${REACT_APP_OKTA_ORG_URL}`,
 });
 
 const database = new Sequelize(
