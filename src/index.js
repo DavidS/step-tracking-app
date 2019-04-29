@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import App from './App';
 
 const oktaConfig = {
-  issuer: `${process.env.REACT_APP_OKTA_ORG_URL}/oauth2/default`,
+  issuer: `${process.env.REACT_APP_OKTA_ORG_URL}`,
   redirect_uri: `${window.location.origin}/implicit/callback`,
   client_id: process.env.REACT_APP_OKTA_CLIENT_ID,
 };
