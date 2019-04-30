@@ -176,8 +176,16 @@ const Step = database.define(
     steps: Sequelize.INTEGER,
     stepsDate: { type: Sequelize.DATEONLY, field: 'steps_date' },
   },
-  { underscored: true },
-);
+  {
+    underscored: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['user_id', 'steps_date'],
+      }
+    ]
+  })
+;
 
 const Profile = database.define(
   'profiles',
