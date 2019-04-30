@@ -99,12 +99,12 @@ class StepLeaders extends Component {
   render() {
     const { classes } = this.props;
     const { dashData, loading } = this.state;
-    const { globalSteps, leaders } = dashData;
+    const { total_steps, leaders } = dashData;
 
     return (
       <Fragment>
         <Typography variant="display1">
-          {`Step Leaders - Total Steps: ${globalSteps || 0}`}
+          {`Step Leaders - Total Steps: ${total_steps || 0}`}
         </Typography>
         {loading && (
           <div className={classes.loading}>
