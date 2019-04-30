@@ -32,7 +32,7 @@ const AppHeader = ({ classes }) => (
         color="inherit"
         style={{ paddingRight: '15px' }}
       >
-        {' May for Mental Health'}
+        {' Mental Health May'}
       </Typography>
       <Button color="inherit" component={Link} to="/">
         {'Step Leaders'}
